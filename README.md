@@ -63,6 +63,8 @@ cl push action apidirectory setapitype '["hyperion", "Scalable Full History API 
 
 cl push action apidirectory setapitype '["lightapi", "EOS Light API", "https://github.com/cc32d9/eos_zmq_light_api"]' -p apidirectory@admin
 
+cl push action apidirectory setapitype '["dfuse", "dfuse Streaming API for EOS", "https://www.dfuse.io/"]' -p apidirectory@admin
+
 ```
 
 
