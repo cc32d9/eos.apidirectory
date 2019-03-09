@@ -144,31 +144,27 @@ CONTRACT apidirectory : public eosio::contract {
     auto idx = _records.get_index<name("recidx")>();
     auto recitr = idx.lower_bound(recidx(type, provider));
     while( recitr != idx.end() &&
-           recitr->type == type && recitr->provider == provider &&
-           recitr->srvname != srvname ) {
+           recitr->type == type && recitr->provider == provider ) {
+      if( recitr->srvname == srvname ) {
+        _records.modify(*recitr, provider, [&]( auto& item ) {
+            item.url = url;
+            item.continent = continent;
+            item.country = country;
+          });
+        return;
+      }
       recitr++;
     }
 
-    if( recitr != idx.end() &&
-        recitr->type == type && recitr->provider == provider &&
-        recitr->srvname == srvname ) {
-      _records.modify(*recitr, provider, [&]( auto& item ) {
-          item.url = url;
-          item.continent = continent;
-          item.country = country;
-        });
-    }
-    else {
-      _records.emplace(provider, [&]( auto& item ) {
-          item.id = _records.available_primary_key();
-          item.type = type;
-          item.provider = provider;
-          item.srvname = srvname;
-          item.url = url;
-          item.continent = continent;
-          item.country = country;
-        });
-    }
+    _records.emplace(provider, [&]( auto& item ) {
+        item.id = _records.available_primary_key();
+        item.type = type;
+        item.provider = provider;
+        item.srvname = srvname;
+        item.url = url;
+        item.continent = continent;
+        item.country = country;
+      });
   }
 
 
@@ -187,7 +183,7 @@ CONTRACT apidirectory : public eosio::contract {
       }
       recitr++;
     }
-    eosio_assert(false, "Cannot find such record");
+    eosio_assert(false, "Cannot find the record");
   }
 
   
