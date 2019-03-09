@@ -1,5 +1,7 @@
 # EOS API Directory smart contract
 
+## Workflow
+
 This is an EOS smart contract that holds a catalog of various
 infrastructure APIs, such as history or account status APIs.
 
@@ -43,11 +45,32 @@ attributes. The `updrec` action either adds a new record, or modifies an
 existing one.
 
 
+Each record may be audited by an independent auditor. Auditors are
+selected by administrators, and each of them has a PGP key publiushed on
+one of PGP key servers.
+
+Once the auditor verifies that the API endpoint ownership and validity,
+he or she publishes an audit report in a file on IPFS. The format of the
+audit report is yet to be formalized. Once the report is published, the
+auditor sends `audited` action to the directory, and the corresponding
+record is marked as audited.
+
+An auditor cannot overwrite another auditor's report. Existing reports
+by the same auditor can be updated.
+
+An auditor may also revoke the report if the service is no longer
+satisfying the requirements.
+
 
 ## Administrator actions
 
 ```
+# easy alias for switching between testnet and mainnet
+
 alias cl='cleos -v -u http://jungle2.cryptolions.io'
+
+# "admin" privilege is required for administrator actions. It can be
+# assigned to a group of administrator accounts.
 
 cl set account permission apidirectory admin \
  '{"threshold": 1,"keys": [],"accounts": [{"permission": {"actor": "cc32dninexxx","permission": "active"},"weight": 1}],"waits": []}' \
@@ -55,7 +78,9 @@ cl set account permission apidirectory admin \
 cl set action permission apidirectory apidirectory setnetwork admin
 cl set action permission apidirectory apidirectory setapitype admin
 cl set action permission apidirectory apidirectory approveprv admin
+cl set action permission apidirectory apidirectory setauditor admin
 
+# Register all known EOSIO based blockchains
 
 cl push action apidirectory setnetwork '["eos", "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906", "EOS Mainnet", ""]' -p apidirectory@admin
 
@@ -74,6 +99,7 @@ cl push action apidirectory setnetwork '["meet.one", "cfe6486a83bad4962f232d4800
 cl push action apidirectory setnetwork '["eosforce", "bd61ae3a031e8ef2f97ee3b0e62776d6d30d4833c8f7c1645c657b149151004b", "EOS Force", "https://www.eosforce.io/"]' -p apidirectory@admin
 
 
+# Register all known API types
 
 cl push action apidirectory setapitype '["v1chainpl", "chain_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/chain_plugin"]' -p apidirectory@admin
 
@@ -87,6 +113,11 @@ cl push action apidirectory setapitype '["lightapi", "EOS Light API", "https://g
 
 cl push action apidirectory setapitype '["dfuse", "dfuse Streaming API for EOS", "https://www.dfuse.io/"]' -p apidirectory@admin
 
+
+# Register audiors
+
+cl push action apidirectory setauditor '["rqeofihcqeco", "Rqeofi Hcqeco", "A999 B749 8D1A 8DC4 73E5 3C92 309F 635D AD1B 5517", "https://pgp.mit.edu/", "rqeofi@hcqeco.com", "telegram:rqeofihcqeco"]'  -p apidirectory@admin
+
 ```
 
 
@@ -95,15 +126,35 @@ cl push action apidirectory setapitype '["dfuse", "dfuse Streaming API for EOS",
 ```
 alias cl='cleos -v -u http://jungle2.cryptolions.io'
 
+# API provider registers themselves
+
 cl push action apidirectory setprovider '["cc32dninexxx", "https://github.com/cc32d9", "cc32d9@gmail.com", "telegram:cc32d9"]' -p cc32dninexxx@active
 
-## Administrator has to approve the new provider
+# Administrator has to approve the new provider
+
 cl push action apidirectory approveprv '["cc32dninexxx"]' -p apidirectory@admin
 
+# Provider registers all their API endpoints. If they support multiple
+# endpoints of the same type on the same network, use different service names
+# to distinguish the records.
 
 cl push action apidirectory updrec '["eos", "lightapi", "cc32dninexxx", "worldwide", "https://api.net.light.xeos.me", "ANY", "ANY"]' -p cc32dninexxx@active
 
 ```
+
+
+# Auditor actions
+
+```
+# Submit an audit
+cl push action apidirectory audited '["rqeofihcqeco", "eos", "lightapi", "cc32dninexxx", "worldwide", "QmQgSzNmb5pXd1XpzvLdKBBAdiTrqXcJHrTX5RQhHyWRTd"]' -p rqeofihcqeco@active
+
+
+# Revoke an audit
+cl push action apidirectory revokeaudit '["rqeofihcqeco", "eos", "lightapi", "cc32dninexxx", "worldwide"]' -p rqeofihcqeco@active
+
+```
+
 
 # Accessing the records
 

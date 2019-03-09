@@ -17,6 +17,7 @@ limitations under the License.
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/action.hpp>
 #include <eosiolib/multi_index.hpp>
+#include <eosiolib/time.hpp>
 
 
 using namespace eosio;
@@ -110,6 +111,31 @@ CONTRACT apidirectory : public eosio::contract {
       });
   }
 
+
+  ACTION setauditor(name auditor, string contact_name,
+                    string fingerprint, string keyserver, string email, string im)
+  {
+    require_auth(permission_level(_self, name("admin")));
+    eosio_assert(is_account(auditor), "auditor account does not exist");
+    auto setter = [&]( auto& item ) {
+      item.auditor = auditor;
+      item.contact_name = contact_name;
+      item.pgp_key_fingerprint = fingerprint;
+      item.pgp_key_server = keyserver;
+      item.email = email;
+      item.im = im;
+    };
+    auditors _auditors(_self, _self.value);
+    auto adtitr = _auditors.find(auditor.value);
+    if( adtitr == _auditors.end() ) {
+      _auditors.emplace(_self, setter);
+    }
+    else {
+      _auditors.modify(*adtitr, _self, setter);
+    }
+  }
+
+
   
   ACTION updrec(name network, name type, name provider, name srvname,
                 string url, string continent, string country)
@@ -164,6 +190,9 @@ CONTRACT apidirectory : public eosio::contract {
         item.url = url;
         item.continent = continent;
         item.country = country;
+        item.audited_by = name();
+        item.audit_ipfs_file = "";
+        item.audited_on.utc_seconds = 0;
       });
   }
 
@@ -186,6 +215,65 @@ CONTRACT apidirectory : public eosio::contract {
     eosio_assert(false, "Cannot find the record");
   }
 
+
+  ACTION audited(name auditor, name network, name type, name provider, name srvname, string ipfs_file)
+  {
+    require_auth(auditor);
+    auditors _auditors(_self, _self.value);
+    auto adtitr = _auditors.find(auditor.value);
+    eosio_assert(adtitr != _auditors.end(), "Unknown auditor");
+
+    records _records(_self, network.value);
+    auto idx = _records.get_index<name("recidx")>();
+    auto recitr = idx.lower_bound(recidx(type, provider));
+    while( recitr != idx.end() &&
+           recitr->type == type && recitr->provider == provider ) {
+      if( recitr->srvname == srvname ) {
+        if( recitr->audited_by != name() )
+          eosio_assert(recitr->audited_by == auditor, "This record was audited by a different auditor");
+        _records.modify(*recitr, auditor, [&]( auto& item ) {
+            item.audited_by = auditor;
+            item.audit_ipfs_file = ipfs_file;
+            item.audited_on = time_point_sec(now());
+          });
+        return;
+      }
+      recitr++;
+    }
+    eosio_assert(false, "Cannot find the record");
+  }
+        
+
+  ACTION revokeaudit(name auditor, name network, name type, name provider, name srvname)
+  {
+    require_auth(auditor);
+    auditors _auditors(_self, _self.value);
+    auto adtitr = _auditors.find(auditor.value);
+    eosio_assert(adtitr != _auditors.end(), "Unknown auditor");
+
+    records _records(_self, network.value);
+    auto idx = _records.get_index<name("recidx")>();
+    auto recitr = idx.lower_bound(recidx(type, provider));
+    while( recitr != idx.end() &&
+           recitr->type == type && recitr->provider == provider ) {
+      if( recitr->srvname == srvname ) {
+        eosio_assert(recitr->audited_by != name(), "This record does not have an audit");
+        eosio_assert(recitr->audited_by == auditor, "This record was audited by a different auditor");
+        _records.modify(*recitr, auditor, [&]( auto& item ) {
+            item.audited_by = name();
+            item.audit_ipfs_file = "";
+            item.audited_on.utc_seconds = 0;
+          });
+        return;
+      }
+      recitr++;
+    }
+    eosio_assert(false, "Cannot find the record");
+  }
+
+  
+    
+    
   
   
  private:
@@ -226,6 +314,19 @@ CONTRACT apidirectory : public eosio::contract {
     providers _providers;
     
 
+    struct [[eosio::table("auditors")]] auditor {
+      name         auditor;
+      string       contact_name;
+      string       pgp_key_fingerprint;
+      string       pgp_key_server;
+      string       email;
+      string       im;
+      auto primary_key()const { return auditor.value; }
+    };
+
+    typedef eosio::multi_index<name("auditors"), auditor> auditors;
+
+    
     inline static uint128_t recidx(name type, name provider) {
       return (((uint128_t)type.value)<<64) | provider.value;
     }
@@ -239,6 +340,9 @@ CONTRACT apidirectory : public eosio::contract {
       string       url;
       string       continent;
       string       country;
+      name         audited_by;
+      time_point_sec audited_on;
+      string       audit_ipfs_file;
       auto primary_key()const { return id; }
       uint64_t get_type() const { return type.value; }
       uint128_t get_recidx() const { return recidx(type, provider); }
@@ -252,5 +356,6 @@ CONTRACT apidirectory : public eosio::contract {
 };
 
 
-EOSIO_DISPATCH(apidirectory, (setnetwork)(setapitype)(setprovider)(approveprv)(updrec)(delrec))
+EOSIO_DISPATCH(apidirectory, (setnetwork)(setapitype)(setprovider)(approveprv)(setauditor)
+               (updrec)(delrec)(audited)(revokeaudit))
 
