@@ -110,9 +110,9 @@ CONTRACT apidirectory : public eosio::contract {
       });
   }
 
-
-  ACTION updrec(name network, name type, name provider, string url,
-                string continent, string country)
+  
+  ACTION updrec(name network, name type, name provider, name srvname,
+                string url, string continent, string country)
   {
     require_auth(provider);
     auto netitr = _networks.find(network.value);
@@ -142,37 +142,55 @@ CONTRACT apidirectory : public eosio::contract {
 
     records _records(_self, network.value);
     auto idx = _records.get_index<name("recidx")>();
-    auto recitr = idx.find(recidx(type, provider));
-    if( recitr == idx.end() ) {
-      _records.emplace(provider, [&]( auto& item ) {
-          item.id = _records.available_primary_key();
-          item.type = type;
-          item.provider = provider;
-          item.url = url;
-          item.continent = continent;
-          item.country = country;
-        });
+    auto recitr = idx.lower_bound(recidx(type, provider));
+    while( recitr != idx.end() &&
+           recitr->type == type && recitr->provider == provider &&
+           recitr->srvname != srvname ) {
+      recitr++;
     }
-    else {
+
+    if( recitr != idx.end() &&
+        recitr->type == type && recitr->provider == provider &&
+        recitr->srvname == srvname ) {
       _records.modify(*recitr, provider, [&]( auto& item ) {
           item.url = url;
           item.continent = continent;
           item.country = country;
         });
     }
+    else {
+      _records.emplace(provider, [&]( auto& item ) {
+          item.id = _records.available_primary_key();
+          item.type = type;
+          item.provider = provider;
+          item.srvname = srvname;
+          item.url = url;
+          item.continent = continent;
+          item.country = country;
+        });
+    }
   }
 
 
-  ACTION delrec(name network, name type, name provider)
+  
+  ACTION delrec(name network, name type, name provider, name srvname)
   {
     require_auth(provider);
     records _records(_self, network.value);
     auto idx = _records.get_index<name("recidx")>();
-    auto recitr = idx.find(recidx(type, provider));
-    eosio_assert(recitr != idx.end(), "Cannot find such record");
-    _records.erase(*recitr);
+    auto recitr = idx.lower_bound(recidx(type, provider));
+    while( recitr != idx.end() &&
+           recitr->type == type && recitr->provider == provider ) {
+      if( recitr->srvname == srvname ) {
+        _records.erase(*recitr);
+        return;
+      }
+      recitr++;
+    }
+    eosio_assert(false, "Cannot find such record");
   }
-      
+
+  
   
  private:
 
@@ -221,12 +239,13 @@ CONTRACT apidirectory : public eosio::contract {
       uint64_t     id;
       name         type;
       name         provider;
+      name         srvname;
       string       url;
       string       continent;
       string       country;
       auto primary_key()const { return id; }
-      uint128_t get_recidx() const { return recidx(type, provider); }
       uint64_t get_type() const { return type.value; }
+      uint128_t get_recidx() const { return recidx(type, provider); }
     };
 
     typedef eosio::multi_index<name("records"), record,

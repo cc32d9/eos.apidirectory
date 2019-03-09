@@ -3,22 +3,44 @@
 This is an EOS smart contract that holds a catalog of various
 infrastructure APIs, such as history or account status APIs.
 
-The directory lists all known EOS networks. Network names and API types
-are added by directory administrators.
+The directory lists API endpoints for all known EOS networks. Network
+names and API types are added by directory administrators.
 
 Each API provider is identified by an account name. Administrators have
 to approve APi providers in order to avoid spamming.
 
-Each APi provider is allowed to specify one API URL of each type for
-each network. Apart from API URL, the provider needs to specify a
-two-letter ISO continent code and 2-letter country code. The code "ANY"
-can be used for both to indicate a georedundant API that is available
-from multiple continents.
+API providers add records for API endpoints that they are
+maintaining. Each record has the following set of attributes:
 
-Valid continent codes: "AF", "AN", "AS", "EU", "NA", "OC", "SA".
+* `network`: the blockchain name. It is used as scope name in `records`
+  table.
 
-The API provider may modify or delete a corresponding entry in the
-directory.
+* `type`: one of known API types from the list of types maintained by
+  administrators.
+
+* `provider`: provider's EOS account name.
+
+* `srvname`: 12-symbol service name that helps distinguishing between
+  entries belonging to the same provider. This can also be an empty
+  string.
+
+* `url`: the endpoint URL. Some API types are not following th estandard
+  URL scheme, so the syntax is dependent on API type. For example, p2p
+  peer would be in the form of `host:port`.
+
+* `continent`: continent code where the API is served from. If the
+  service is geographically distributed across multiple continents, use
+  "ANY". Valid values are: "AF", "AN", "AS", "EU", "NA", "OC",
+  "SA". "ANY".
+
+* `country`: ISO country code of the country the API is served from. Use
+  "ANY" if the URL is served from multiple countries.
+
+
+The API provider may modify or delete a record in the directory by
+specifying its `network`, `type`, `provider`, and `srvname`
+attributes. The `updrec` action either adds a new record, or modifies an
+existing one.
 
 
 
@@ -79,7 +101,7 @@ cl push action apidirectory setprovider '["cc32dninexxx", "https://github.com/cc
 cl push action apidirectory approveprv '["cc32dninexxx"]' -p apidirectory@admin
 
 
-cl push action apidirectory updrec '["eos", "lightapi", "cc32dninexxx", "https://api.net.light.xeos.me", "ANY", "ANY"]' -p cc32dninexxx@active
+cl push action apidirectory updrec '["eos", "lightapi", "cc32dninexxx", "worldwide", "https://api.net.light.xeos.me", "ANY", "ANY"]' -p cc32dninexxx@active
 
 ```
 
