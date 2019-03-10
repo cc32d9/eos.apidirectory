@@ -80,6 +80,56 @@ Once the provider updates a record, its audit report is cleared, and the
 auditor would have to re-evaluate it again.
 
 
+## Api types and flags
+
+### `v1chain`
+
+This is standard HTTP API provided by `chain_plugin` in `nodeos`. It
+provides account information, contract table contents, and allows
+pushing transactions to the network.
+
+
+### `v1history`
+
+`v1history` API was originally implemented in `history_plugin` in
+`nodeos`, but it appeared not to be scalable enough. There are several
+implementations that emulate the history API via other databases.
+
+The lower 5 bits of the `flags` are reserved for implementation details,
+such as:
+
+* 0: original `history_api`
+
+* 1: JavaScript adapter on top of MongoDB database by Cryptolions:
+  https://github.com/CryptoLions/EOS-mongo-history-API
+
+* 2: `elasticsearch_plugin` and Python API layer:
+https://github.com/EOSLaoMao/elasticsearch_plugin
+https://github.com/EOSTribe/ESHistoryAPI
+
+
+### `p2p`
+
+This is peer-to-peer protocol used by `nodeos` servers for exchanging
+the blockchain data and synchronizing against each other.
+
+### `hyperion`
+
+Hyperion is a new-generation history API developed by EOS Rio:
+https://github.com/eosrio/Hyperion-History-API
+
+### `lightapi`
+
+Light API is providing current token balances and mapping of keys to
+accounts: https://github.com/cc32d9/eos_zmq_light_api
+
+### `dfuse`
+
+dfuse is a proprietary streaming API provided by EOS Canada.
+
+
+
+
 ## Administrator actions
 
 ```
@@ -119,11 +169,11 @@ cl push action apidirectory setnetwork '["eosforce", "bd61ae3a031e8ef2f97ee3b0e6
 
 # Register all known API types
 
-cl push action apidirectory setapitype '["v1chainpl", "chain_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/chain_plugin"]' -p apidirectory@admin
+cl push action apidirectory setapitype '["v1chain", "chain_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/chain_plugin"]' -p apidirectory@admin
 
-cl push action apidirectory setapitype '["v1historypl", "Original history_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/history_plugin"]' -p apidirectory@admin
+cl push action apidirectory setapitype '["v1history", "history_plugin and its emulations", "https://github.com/EOSIO/eos/tree/master/plugins/history_plugin"]' -p apidirectory@admin
 
-cl push action apidirectory setapitype '["nodeosp2p", "net_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/net_plugin"]' -p apidirectory@admin
+cl push action apidirectory setapitype '["p2p", "net_plugin in nodeos", "https://github.com/EOSIO/eos/tree/master/plugins/net_plugin"]' -p apidirectory@admin
 
 cl push action apidirectory setapitype '["hyperion", "Scalable Full History API Solution", "https://github.com/eosrio/Hyperion-History-API"]' -p apidirectory@admin
 
