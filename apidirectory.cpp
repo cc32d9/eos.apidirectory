@@ -178,6 +178,7 @@ CONTRACT apidirectory : public eosio::contract {
             item.country = country;
             item.flags = flags;
             item.revision++;
+            item.updated_on = time_point_sec(now());
             item.audited_by = name();
             item.audit_ipfs_file = "";
             item.audited_on.utc_seconds = 0;
@@ -196,7 +197,8 @@ CONTRACT apidirectory : public eosio::contract {
         item.continent = continent;
         item.country = country;
         item.flags = flags;
-        item.revision = 0;
+        item.revision = 1;
+        item.updated_on = time_point_sec(now());
         item.audited_by = name();
         item.audit_ipfs_file = "";
         item.audited_on.utc_seconds = 0;
@@ -340,18 +342,19 @@ CONTRACT apidirectory : public eosio::contract {
 
     // network name is the scope
     struct [[eosio::table("records")]] record {
-      uint64_t     id;
-      name         type;
-      name         provider;
-      name         srvname;
-      string       url;
-      string       continent;
-      string       country;
-      uint32_t     flags;
-      uint32_t     revision;
-      name         audited_by;
-      time_point_sec audited_on;
-      string       audit_ipfs_file;
+      uint64_t        id;
+      name            type;
+      name            provider;
+      name            srvname;
+      string          url;
+      string          continent;
+      string          country;
+      uint32_t        flags;
+      uint32_t        revision;
+      time_point_sec  updated_on;
+      name            audited_by;
+      time_point_sec  audited_on;
+      string          audit_ipfs_file;
       auto primary_key()const { return id; }
       uint64_t get_type() const { return type.value; }
       uint128_t get_recidx() const { return recidx(type, provider); }

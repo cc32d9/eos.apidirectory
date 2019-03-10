@@ -45,6 +45,14 @@ maintaining. Each record has the following set of attributes:
 * `revision`: a 32-bit integer that is automatically increased every
   time the provider updates the record.
 
+* `updated_on`: timestamp of latest revision.
+
+* `audited_by`: EOS account name of the auditor.
+
+* `audit_ipfs_file`: IPFS file hash with the audit report.
+
+* `audited_on`: timestamp of the audit.
+
 
 The API provider may modify or delete a record in the directory by
 specifying its `network`, `type`, `provider`, and `srvname`
