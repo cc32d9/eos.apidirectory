@@ -5,8 +5,9 @@
 This is an EOS smart contract that holds a catalog of various
 infrastructure APIs, such as history or account status APIs.
 
-The directory lists API endpoints for all known EOS networks. Network
-names and API types are added by directory administrators.
+One directory on EOS mainnet lists API endpoints for all known
+EOSIO-based networks. Network names and API types are added by directory
+administrators.
 
 Each API provider is identified by an account name. Administrators have
 to approve APi providers in order to avoid spamming.
@@ -139,7 +140,8 @@ dfuse is a proprietary streaming API provided by EOS Canada.
 ```
 # easy alias for switching between testnet and mainnet
 
-alias cl='cleos -v -u http://jungle2.cryptolions.io'
+#alias cl='cleos -v -u http://jungle2.cryptolions.io'
+alias cl='cleos -v -u https://api.eossweden.se'
 
 # "admin" privilege is required for administrator actions. It can be
 # assigned to a group of administrator accounts.
@@ -196,7 +198,8 @@ cl push action apidirectory setauditor '["rqeofihcqeco", "Rqeofi Hcqeco", "A999 
 # API Provider actions
 
 ```
-alias cl='cleos -v -u http://jungle2.cryptolions.io'
+#alias cl='cleos -v -u http://jungle2.cryptolions.io'
+alias cl='cleos -v -u https://api.eossweden.se'
 
 # API provider registers themselves
 
