@@ -107,6 +107,10 @@ such as:
 https://github.com/EOSLaoMao/elasticsearch_plugin
 https://github.com/EOSTribe/ESHistoryAPI
 
+* 3: Light History API plugin made by Greymass:
+  https://github.com/greymass/eos/tree/hapi-limited/
+
+
 
 ### `p2p`
 
