@@ -38,6 +38,13 @@ maintaining. Each record has the following set of attributes:
 * `country`: ISO country code of the country the API is served from. Use
   "ANY" if the URL is served from multiple countries.
 
+* `flags`: a 32-bit unsigned integer indicating implementation options,
+  such as flavors of history API. Each API type defines its own rules
+  for this field.
+
+* `revision`: a 32-bit integer that is automatically increased every
+  time the provider updates the record.
+
 
 The API provider may modify or delete a record in the directory by
 specifying its `network`, `type`, `provider`, and `srvname`
@@ -60,6 +67,9 @@ by the same auditor can be updated.
 
 An auditor may also revoke the report if the service is no longer
 satisfying the requirements.
+
+Once the provider updates a record, its audit report is cleared, and the
+auditor would have to re-evaluate it again.
 
 
 ## Administrator actions
@@ -138,7 +148,7 @@ cl push action apidirectory approveprv '["cc32dninexxx"]' -p apidirectory@admin
 # endpoints of the same type on the same network, use different service names
 # to distinguish the records.
 
-cl push action apidirectory updrec '["eos", "lightapi", "cc32dninexxx", "worldwide", "https://api.net.light.xeos.me", "ANY", "ANY"]' -p cc32dninexxx@active
+cl push action apidirectory updrec '["eos", "lightapi", "cc32dninexxx", "worldwide", "https://api.net.light.xeos.me", "ANY", "ANY", 0]' -p cc32dninexxx@active
 
 ```
 

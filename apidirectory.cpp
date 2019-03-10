@@ -138,7 +138,7 @@ CONTRACT apidirectory : public eosio::contract {
 
   
   ACTION updrec(name network, name type, name provider, name srvname,
-                string url, string continent, string country)
+                string url, string continent, string country, uint32_t flags)
   {
     require_auth(provider);
     auto netitr = _networks.find(network.value);
@@ -176,6 +176,11 @@ CONTRACT apidirectory : public eosio::contract {
             item.url = url;
             item.continent = continent;
             item.country = country;
+            item.flags = flags;
+            item.revision++;
+            item.audited_by = name();
+            item.audit_ipfs_file = "";
+            item.audited_on.utc_seconds = 0;
           });
         return;
       }
@@ -190,6 +195,8 @@ CONTRACT apidirectory : public eosio::contract {
         item.url = url;
         item.continent = continent;
         item.country = country;
+        item.flags = flags;
+        item.revision = 0;
         item.audited_by = name();
         item.audit_ipfs_file = "";
         item.audited_on.utc_seconds = 0;
@@ -340,6 +347,8 @@ CONTRACT apidirectory : public eosio::contract {
       string       url;
       string       continent;
       string       country;
+      uint32_t     flags;
+      uint32_t     revision;
       name         audited_by;
       time_point_sec audited_on;
       string       audit_ipfs_file;
