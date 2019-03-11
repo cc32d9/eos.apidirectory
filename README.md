@@ -123,6 +123,20 @@ the blockchain data and synchronizing against each other.
 Hyperion is a new-generation history API developed by EOS Rio:
 https://github.com/eosrio/Hyperion-History-API
 
+Lower 4 bits of the flags indicate various limitations that the provider
+may choose. All zeros mean that the API has full history and collecting
+blocks, deltas, and traces.
+
+* Bit 0: if set to 1, the service keeps only partial history.
+
+* Bit 1: if set to 1, the service skips blocks indexing.
+
+* Bit 2: if set to 1, the service skips traces indexing.
+
+* Bit 3: if set to 1, the service skips deltas indexing.
+
+
+
 ### `lightapi`
 
 Light API is providing current token balances and mapping of keys to

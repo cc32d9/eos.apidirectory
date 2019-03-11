@@ -103,7 +103,8 @@ CONTRACT apidirectory : public eosio::contract {
   ACTION approveprv(name provider)
   {
     require_auth(permission_level(_self, name("admin")));
-
+    require_recipient(provider);
+    
     auto prvitr = _providers.find(provider.value);
     eosio_assert( prvitr != _providers.end(), "Cannot find provider");
     _providers.modify(*prvitr, same_payer, [&]( auto& item ) {
@@ -117,6 +118,8 @@ CONTRACT apidirectory : public eosio::contract {
   {
     require_auth(permission_level(_self, name("admin")));
     eosio_assert(is_account(auditor), "auditor account does not exist");
+    require_recipient(auditor);
+    
     auto setter = [&]( auto& item ) {
       item.auditor = auditor;
       item.contact_name = contact_name;
@@ -228,6 +231,7 @@ CONTRACT apidirectory : public eosio::contract {
   ACTION audited(name auditor, name network, name type, name provider, name srvname, string ipfs_file)
   {
     require_auth(auditor);
+    require_recipient(provider);    
     auditors _auditors(_self, _self.value);
     auto adtitr = _auditors.find(auditor.value);
     eosio_assert(adtitr != _auditors.end(), "Unknown auditor");
@@ -256,6 +260,7 @@ CONTRACT apidirectory : public eosio::contract {
   ACTION revokeaudit(name auditor, name network, name type, name provider, name srvname)
   {
     require_auth(auditor);
+    require_recipient(provider);    
     auditors _auditors(_self, _self.value);
     auto adtitr = _auditors.find(auditor.value);
     eosio_assert(adtitr != _auditors.end(), "Unknown auditor");
