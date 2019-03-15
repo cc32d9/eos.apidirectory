@@ -254,6 +254,14 @@ cl get table apidirectory eos records --index 2 --key-type name --lower lightapi
 
 ```
 
+The `props` table is to store internal runtime properties, and oneof
+them is global revision number that is increased on every update in
+contract tables. The front end can efficiently poll the revision number
+and only refresh its cache when needed:
+
+```
+cl get table apidirectory apidirectory props --key-type name --lower revision --limit 1
+```
 
 
 ## Copyright and License
