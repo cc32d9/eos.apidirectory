@@ -186,6 +186,7 @@ cl push action apidirectory setnetwork '["meet.one", "cfe6486a83bad4962f232d4800
 
 cl push action apidirectory setnetwork '["eosforce", "bd61ae3a031e8ef2f97ee3b0e62776d6d30d4833c8f7c1645c657b149151004b", "EOS Force", "https://www.eosforce.io/"]' -p apidirectory@admin
 
+cl push action apidirectory setnetwork '["wax", "1064487b3cd1a897ce03ae5b6a865651747e2e152090f99c1d19d44e01aea5a4", "WAX", "https://wax.io/"]' -p apidirectory@admin
 
 # Register all known API types
 
@@ -201,6 +202,7 @@ cl push action apidirectory setapitype '["lightapi", "EOS Light API", "https://g
 
 cl push action apidirectory setapitype '["dfuse", "dfuse Streaming API for EOS", "https://www.dfuse.io/"]' -p apidirectory@admin
 
+cl push action apidirectory setapitype '["dsp", "dApps Service Provider", "https://www.liquidapps.io/"]' -p apidirectory@admin
 
 # Register audiors
 
